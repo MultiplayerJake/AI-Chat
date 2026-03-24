@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="AI" content="width=device-width, initial-scale=1.0">
+    <title>Ask AI</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <main class="app">
+        <header class="hero">
+            <p class="eyebrow">Simple AI Website</p>
+            <h1>Ask Anything</h1>
+            <p class="subtitle">
+                Type a question, press send, and get a reply from your local AI model.
+                By default this page talks to Ollama on your device, but you can change the model and endpoint in the toolbar below.
+            </p>
+        </header>
+
+        <section class="chat" id="chat">
+            <div class="message system">
+                Ready when you are. Try asking for an explanation, summary, idea, or quick answer.
+            </div>
+        </section>
+
+        <section class="composer">
+            <div class="controls">
+                <div>
+                    <label for="prompt">Your question</label>
+                    <textarea id="prompt" placeholder="Ask the AI something..."></textarea>
+                </div>
+                <button class="send" id="sendButton">Send</button>
+            </div>
+
+            <div class="toolbar">
+                <div>
+                    <label for="modelInput">Model name</label>
+                    <input id="modelInput" type="text" value="qwen3.5"/>
+                </div>
+                <button class="clear" id="clearButton" type="button">Clear Chat</button>
+            </div>
+
+            <div class="status" id="status"></div>
+        </section>
+        <section class="composer">
+            <h2>Models:</h2>
+            <p class="subtitle">You can choose any installed model but these are the one that was tested.</p>
+            <ul>
+                <li>Qwen3.5 slower but better</li>
+                <li>llama3.1 faster but worse</li>
+            </ul>
+        </section>
+    </main>
+
+    <script type="module" src="./script.js"></script>
+</body>
+</html>
