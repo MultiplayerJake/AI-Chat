@@ -2,19 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="AI" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src http://localhost:11434; img-src 'self' data:;">
     <title>Ask AI</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
     <main class="app">
         <header class="hero">
-            <p class="eyebrow">Simple AI Website</p>
-            <h1>Ask Anything</h1>
-            <p class="subtitle">
-                Type a question, press send, and get a reply from your local AI model.
-                By default this page talks to Ollama on your device, but you can change the model and endpoint in the toolbar below.
-            </p>
+            <div class="hero-content">
+                <p class="eyebrow">Simple AI Website</p>
+                <h1>Ask Anything</h1>
+                <p class="subtitle">
+                    Type a question, press send, and get a reply from your local AI model.
+                    By default this page talks to Ollama on your device, but you can change the model and endpoint in the toolbar below.
+                </p>
+            </div>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <span class="theme-icon">&#9790;</span>
+            </button>
         </header>
 
         <section class="chat" id="chat">
@@ -58,6 +64,18 @@
                 <li>Qwen3.5 slower but better</li>
                 <li>llama3.1 faster but worse</li>
             </ul>
+        </section>
+
+        <section class="prompts-section">
+            <h3>Try these prompts</h3>
+            <div class="prompt-chips" id="promptChips">
+                <button class="chip" data-prompt="Explain this like I'm 10 years old.">Explain like I'm 10</button>
+                <button class="chip" data-prompt="Give me the pros and cons of the following think">Pros and cons</button>
+                <button class="chip" data-prompt="Summarize the following in 5 bullet points">Summarize</button>
+                <button class="chip" data-prompt="Write Python code. thing.">Write code</button>
+                <button class="chip" data-prompt="Translate the following to English">Translate to English</button>
+                <button class="chip" data-prompt="Help me brainstorm ideas">Brainstorm ideas</button>
+            </div>
         </section>
     </main>
 

@@ -5,7 +5,13 @@ const modelInput = document.getElementById("modelInput");
 const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
 const statusText = document.getElementById("status");
+const promptChips = document.getElementById("promptChips");
+const themeToggle = document.getElementById("themeToggle");
 
+
+const MAX_PROMPT_LENGTH = 30000;
+const MAX_SYSTEM_PROMPT_LENGTH = 5000;
+const MAX_MESSAGE_LENGTH = 30000;
 
 const messages = [];
 let isLoading = false;
@@ -21,21 +27,99 @@ function scrollToBottom() {
 function renderMessage(role, content) {
   const element = document.createElement("div");
   element.className = `message ${role}`;
-  element.textContent = content;
+  
+  if (role === "ai") {
+    element.innerHTML = `
+      <div class="message-content">${parseMarkdown(content)}</div>
+      <button class="copy-btn" aria-label="Copy response">Copy</button>
+    `;
+  } else {
+    element.textContent = content;
+  }
+  
   chat.appendChild(element);
   scrollToBottom();
   return element;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function parseMarkdown(text) {
+  let html = escapeHtml(text);
+  
+  html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+    const langLabel = lang ? `<span class="code-lang">${lang}</span>` : "";
+    return `<pre class="code-block"><button class="copy-code-btn" data-code="${code.trim().replace(/"/g, '&quot;')}">Copy</button>${langLabel}<code>${code.trim()}</code></pre>`;
+  });
+
+  html = html.replace(/`([^`]+)`/g, "<code class=\"inline-code\">$1</code>");
+  
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+  html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  html = html.replace(/_([^_]+)_/g, "<em>$1</em>");
+
+  const lines = html.split("\n");
+  let inList = false;
+  let listType = "";
+  let result = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (trimmed.match(/^[-*]\s/)) {
+      if (!inList || listType !== "ul") {
+        if (inList) result.push(`</${listType}>`);
+        result.push("<ul>");
+        inList = true;
+        listType = "ul";
+      }
+      result.push(`<li>${trimmed.slice(2)}</li>`);
+    } else if (trimmed.match(/^\d+\.\s/)) {
+      if (!inList || listType !== "ol") {
+        if (inList) result.push(`</${listType}>`);
+        result.push("<ol>");
+        inList = true;
+        listType = "ol";
+      }
+      result.push(`<li>${trimmed.replace(/^\d+\.\s/, "")}</li>`);
+    } else {
+      if (inList) {
+        result.push(`</${listType}>`);
+        inList = false;
+        listType = "";
+      }
+      if (trimmed === "") {
+        result.push("<br>");
+      } else {
+        result.push(`<p>${trimmed}</p>`);
+      }
+    }
+  }
+
+  if (inList) {
+    result.push(`</${listType}>`);
+  }
+
+  return result.join("\n");
 }
 
 function createTypingIndicator() {
   const wrapper = document.createElement("div");
   wrapper.className = "message ai";
   wrapper.innerHTML = `
-    <div class="typing" aria-label="AI is thinking">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
+    <span class="message-content">
+      <span class="typing" aria-label="AI is thinking">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </span>
   `;
   chat.appendChild(wrapper);
   scrollToBottom();
@@ -65,8 +149,24 @@ function setLoadingState(loading) {
 async function askAI() {
   const prompt = promptInput.value.trim();
   const model = modelInput.value.trim();
+  const systemPrompt = systemPromptInput.value.trim();
 
   if (!prompt || !model || isLoading) {
+    return;
+  }
+
+  if (prompt.length > MAX_PROMPT_LENGTH) {
+    setStatus(`Prompt exceeds ${MAX_PROMPT_LENGTH.toLocaleString()} character limit.`);
+    return;
+  }
+
+  if (systemPrompt.length > MAX_SYSTEM_PROMPT_LENGTH) {
+    setStatus(`System prompt exceeds ${MAX_SYSTEM_PROMPT_LENGTH.toLocaleString()} character limit.`);
+    return;
+  }
+
+  if (prompt.length > MAX_MESSAGE_LENGTH) {
+    setStatus(`Message too long (max ${MAX_MESSAGE_LENGTH.toLocaleString()} chars).`);
     return;
   }
 
@@ -77,35 +177,101 @@ async function askAI() {
   setStatus(`Asking model "${model}"...`);
 
   let aiBubble;
+  let fullResponse = "";
 
   try {
     aiBubble = createTypingIndicator();
+    const messageContent = aiBubble.querySelector(".message-content");
 
-    const response = await fetch("http://localhost:11434/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        stream: false,
-        messages: buildRequestMessages(),
-      }),
-    });
+    let response;
+    let streamingWorked = false;
 
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}.`);
+    try {
+      response = await fetch("http://localhost:11434/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          stream: true,
+          messages: buildRequestMessages(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}.`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const data = JSON.parse(line);
+            const content = data.message?.content || "";
+            if (content) {
+              fullResponse += content;
+              messageContent.innerHTML = parseMarkdown(fullResponse);
+              scrollToBottom();
+            }
+          } catch (e) {
+            // Skip invalid JSON
+          }
+        }
+      }
+      streamingWorked = true;
+    } catch (streamError) {
+      if (response && response.body) {
+        response.body.cancel();
+      }
+      setStatus("Streaming not supported, trying standard mode...");
+      await new Promise(r => setTimeout(r, 500));
+
+      const fallbackResponse = await fetch("http://localhost:11434/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          stream: false,
+          messages: buildRequestMessages(),
+        }),
+      });
+
+      if (!fallbackResponse.ok) {
+        throw new Error(`Request failed with status ${fallbackResponse.status}.`);
+      }
+
+      const fallbackData = await fallbackResponse.json();
+      fullResponse = fallbackData.message?.content || "";
+      messageContent.innerHTML = parseMarkdown(fullResponse);
     }
 
-    const data = await response.json();
-    const reply = data.message?.content?.trim();
+    const reply = fullResponse.trim();
 
     if (!reply) {
       throw new Error("The AI returned an empty response.");
     }
 
+    if (reply.length > MAX_MESSAGE_LENGTH) {
+      throw new Error(`AI response exceeds ${MAX_MESSAGE_LENGTH.toLocaleString()} character limit.`);
+    }
+
     messages.push({ role: "assistant", content: reply });
-    aiBubble.textContent = reply;
+    aiBubble.innerHTML = `
+      <div class="message-content">${parseMarkdown(reply)}</div>
+      <button class="copy-btn" aria-label="Copy response">Copy</button>
+    `;
     setStatus("Reply received.");
   } catch (error) {
     const message =
@@ -151,3 +317,67 @@ promptInput.addEventListener("keydown", (event) => {
 });
 
 promptInput.focus();
+
+promptChips.addEventListener("click", (event) => {
+  const chip = event.target.closest(".chip");
+  if (!chip) return;
+
+  const promptTemplate = chip.dataset.prompt;
+  systemPromptInput.value = promptTemplate;
+  systemPromptInput.focus();
+});
+
+const savedTheme = localStorage.getItem("theme") || "dark";
+document.documentElement.setAttribute("data-theme", savedTheme);
+updateThemeIcon();
+
+themeToggle.addEventListener("click", () => {
+  const currentTheme = document.documentElement.getAttribute("data-theme");
+  const newTheme = currentTheme === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", newTheme);
+  localStorage.setItem("theme", newTheme);
+  updateThemeIcon();
+});
+
+function updateThemeIcon() {
+  const theme = document.documentElement.getAttribute("data-theme");
+  const icon = themeToggle.querySelector(".theme-icon");
+  icon.innerHTML = theme === "light" ? "&#9790;" : "&#9728;";
+}
+
+chat.addEventListener("click", async (event) => {
+  const copyCodeBtn = event.target.closest(".copy-code-btn");
+  if (copyCodeBtn) {
+    const code = copyCodeBtn.dataset.code;
+    try {
+      await navigator.clipboard.writeText(code);
+      copyCodeBtn.textContent = "Copied!";
+      setTimeout(() => {
+        copyCodeBtn.textContent = "Copy";
+      }, 1500);
+    } catch (err) {
+      setStatus("Failed to copy code");
+    }
+    return;
+  }
+
+  const copyBtn = event.target.closest(".copy-btn");
+  if (!copyBtn) return;
+
+  const messageEl = copyBtn.closest(".message");
+  const content = messageEl.querySelector(".message-content")?.textContent;
+
+  if (!content) return;
+
+  try {
+    await navigator.clipboard.writeText(content);
+    copyBtn.textContent = "Copied!";
+    copyBtn.classList.add("copied");
+    setTimeout(() => {
+      copyBtn.textContent = "Copy";
+      copyBtn.classList.remove("copied");
+    }, 1500);
+  } catch (err) {
+    setStatus("Failed to copy to clipboard");
+  }
+});
