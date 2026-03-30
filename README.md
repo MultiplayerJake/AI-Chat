@@ -9,15 +9,14 @@ Updates:
 ---------
 -------------------------------------------------- Update 30.03.2026 --------------------------------------------  
 - You can now use a preset for system prompts.  
-- You can copy text from AI.  
+- You can copy text from AI(Code too).  
 - AI can use bullet points and numbered lists and a lot more...  
 - Made the mobile interface better.  
 
 Will be adding:  
 ----------------
-- better systems prompts
-- fix bugs
-- better UI
-- There is a bug when you can click on buttons only if you are hosting it
+- better systems prompts  
+- fix bugs  
+- better UI  
 
 Last edited on 30.03.2026. <---- MultiplayerJake.  
