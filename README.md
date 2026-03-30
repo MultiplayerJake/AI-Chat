@@ -17,5 +17,6 @@ Will be adding:
 - better systems prompts
 - fix bugs
 - better UI
+- There is a bug when you can click on buttons only if you are hosting it
 
 Last edited on 30.03.2026. <---- MultiplayerJake.  
