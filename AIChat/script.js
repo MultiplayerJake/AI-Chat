@@ -1,5 +1,6 @@
 const chat = document.getElementById("chat");
 const promptInput = document.getElementById("prompt");
+const systemPromptInput = document.getElementById("systemPrompt");
 const modelInput = document.getElementById("modelInput");
 const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
@@ -41,10 +42,21 @@ function createTypingIndicator() {
   return wrapper;
 }
 
+function buildRequestMessages() {
+  const systemPrompt = systemPromptInput.value.trim();
+
+  if (!systemPrompt) {
+    return [...messages];
+  }
+
+  return [{ role: "system", content: systemPrompt }, ...messages];
+}
+
 function setLoadingState(loading) {
   isLoading = loading;
   sendButton.disabled = loading;
   promptInput.disabled = loading;
+  systemPromptInput.disabled = loading;
   modelInput.disabled = loading;
   sendButton.textContent = loading ? "Thinking..." : "Send";
   sendButton.classList.toggle("sending", loading);
@@ -77,7 +89,7 @@ async function askAI() {
       body: JSON.stringify({
         model,
         stream: false,
-        messages,
+        messages: buildRequestMessages(),
       }),
     });
 

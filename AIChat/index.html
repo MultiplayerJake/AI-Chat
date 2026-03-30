@@ -24,19 +24,28 @@
         </section>
 
         <section class="composer">
+            <div class="top-row">
+                <div class="system-prompt-group">
+                    <label for="systemPrompt">System prompt</label>
+                    <textarea
+                        id="systemPrompt"
+                        class="system-prompt"
+                        placeholder="Describe how the AI should behave..."
+                    ></textarea>
+                </div>
+
+                <div>
+                    <label for="modelInput">Model name</label>
+                    <input id="modelInput" type="text" value="qwen3.5"/>
+                </div>
+            </div>
+
             <div class="controls">
                 <div>
                     <label for="prompt">Your question</label>
                     <textarea id="prompt" placeholder="Ask the AI something..."></textarea>
                 </div>
                 <button class="send" id="sendButton">Send</button>
-            </div>
-
-            <div class="toolbar">
-                <div>
-                    <label for="modelInput">Model name</label>
-                    <input id="modelInput" type="text" value="qwen3.5"/>
-                </div>
                 <button class="clear" id="clearButton" type="button">Clear Chat</button>
             </div>
 

@@ -200,9 +200,17 @@ h1 {
     background: var(--panel-strong);
 }
 
+.top-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 16px;
+}
+
 .controls {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     gap: 16px;
     align-items: end;
 }
@@ -217,8 +225,8 @@ label {
 
 textarea {
     width: 100%;
-    min-height: 140px;
-    max-height: 260px;
+    min-height: 180px;
+    max-height: 320px;
     resize: vertical;
     border-radius: 24px;
     border: 1px solid var(--border);
@@ -238,11 +246,18 @@ input:focus {
     background: rgba(30,30,45,0.95);
 }
 
-.toolbar {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 16px;
-    margin-top: 16px;
+.system-prompt-group {
+    min-width: 0;
+}
+
+.system-prompt {
+    min-height: 72px;
+    max-height: 120px;
+}
+
+#prompt {
+    min-height: 220px;
+    max-height: 360px;
 }
 
 input {
@@ -303,6 +318,9 @@ button:disabled {
     color: #0a0a0f;
     font-weight: 700;
     box-shadow: var(--glow);
+    padding: 22px 44px;
+    min-width: 180px;
+    font-size: 1.1rem;
 }
 
 .send.sending {
@@ -334,6 +352,9 @@ button:disabled {
 .clear {
     background: linear-gradient(135deg, rgba(138,43,226,0.8), rgba(100,100,150,0.8));
     color: var(--text);
+    padding: 12px 18px;
+    min-width: 0;
+    font-size: 0.95rem;
 }
 
 .clear:hover {
@@ -424,7 +445,7 @@ button:disabled {
         max-width: 94%;
     }
 
-    .toolbar,
+    .top-row,
     .controls {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -443,4 +464,3 @@ button:disabled {
         padding: 20px 24px 28px;
     }
 }
-
