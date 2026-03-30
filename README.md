@@ -6,7 +6,7 @@ After you put your model name in the model name input, and if you want, a system
 
 Updates:  
 ---------
--------------------------------------------------- Update 30.03.2026 -------------------------------------------------------------------------------------  
+-------------------------------------------------- Update 30.03.2026 --------------------------------------------  
 - You can now use a preset for system prompts.  
 - You can copy text from AI.  
 - AI can use bullet points and numbered lists and a lot more...  
