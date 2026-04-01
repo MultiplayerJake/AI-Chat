@@ -11,7 +11,8 @@ Updates:
 - You can now use a preset for system prompts.  
 - You can copy text from AI(Code too).  
 - AI can use bullet points and numbered lists and a lot more...  
-- Made the mobile interface better.  
+- Made the mobile interface better.
+
 -------------------------------------------------- Update 01.04.2026 --------------------------------------------
 - better system prompts.  
   
