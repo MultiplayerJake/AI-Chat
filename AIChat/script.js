@@ -108,7 +108,7 @@ function parseMarkdown(text) {
         listType = "";
       }
       if (trimmed === "") {
-        result.push("<br>");
+        // skip empty lines
       } else {
         result.push(`<p>${trimmed}</p>`);
       }
