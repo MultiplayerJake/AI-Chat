@@ -29,4 +29,4 @@ Updates:
 - added better code highlighting.
 - added response stats. You can now see how long it took the AI to respond, the number of tokens used, and much more...
   
-Last edited on 01.04.2026. <---- MultiplayerJake.  
+Last edited on 03.04.2026. <---- MultiplayerJake.  
