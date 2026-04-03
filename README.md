@@ -5,6 +5,13 @@ Then, in Windows PowerShell, put this: ollama run "the model you use." or look h
 You need to use it with the Live Server extension in VS Code.
 After you put your model name in the model name input, and if you want, a system prompt in the system prompt input, you are ready to go.
 
+Keyboard Shortcuts
+-------------------
+- Ctrl+Enter / Cmd+Enter: Send message.  
+- Ctrl+L: Clear chat.  
+- Escape: Clear focus from the textarea.  
+
+
 Updates:  
 ---------
 -------------------------------------------------- Update 30.03.2026 --------------------------------------------  
@@ -14,6 +21,12 @@ Updates:
 - Made the mobile interface better.
 
 -------------------------------------------------- Update 01.04.2026 --------------------------------------------
-- better system prompts.  
+- Better system prompts.
+  
+-------------------------------------------------- Update 03.04.2026 --------------------------------------------
+- added export and import your chat.  
+- added keyboard shortcuts.  
+- added better code highlighting.
+- added response stats. You can now see how long it took the AI to respond, the number of tokens used, and much more...
   
 Last edited on 01.04.2026. <---- MultiplayerJake.  
