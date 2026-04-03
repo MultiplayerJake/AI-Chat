@@ -223,7 +223,7 @@ h1 {
 
 .message {
     max-width: min(80%, 680px);
-    padding: 20px 24px;
+    padding: 45px;
     border-radius: 28px;
     line-height: 1.6;
     animation: rise 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -284,6 +284,13 @@ h1 {
     cursor: pointer;
     opacity: 0;
     transition: all 0.2s ease;
+}
+
+.message-stats {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 8px;
+    opacity: 0.8;
 }
 
 .message.ai:hover .copy-btn {
@@ -472,9 +479,30 @@ h1 {
 
 .controls {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: 16px;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 12px 16px;
     align-items: end;
+}
+
+.prompt-wrapper {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    min-width: 0;
+}
+
+.action-buttons-top {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    gap: 12px;
+}
+
+.action-buttons-bottom {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    gap: 12px;
 }
 
 label {
@@ -619,6 +647,22 @@ button:disabled {
     font-size: 0.95rem;
 }
 
+.export,
+.import {
+    background: var(--input-bg);
+    color: var(--text);
+    padding: 12px 18px;
+    min-width: 0;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+}
+
+.export:hover,
+.import:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 .clear:hover {
     box-shadow: 0 15px 50px rgba(100, 100, 180, 0.4);
 }
@@ -719,7 +763,7 @@ button:disabled {
 
     .message {
         max-width: 94%;
-        padding: 16px 20px;
+        padding: 30px;
         font-size: 0.95rem;
     }
 
@@ -729,24 +773,31 @@ button:disabled {
     }
 
     .controls {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 12px;
     }
 
-    .controls > div:first-child {
-        order: 1;
+    .prompt-wrapper {
+        width: 100%;
+    }
+
+    .action-buttons-top {
+        display: none;
+    }
+
+    .action-buttons-bottom {
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+    }
+
+    .action-buttons-bottom button {
+        flex: 1;
     }
 
     .send {
-        order: 2;
-        width: 100%;
-        padding: 18px 24px;
-    }
-
-    .clear {
-        order: 3;
-        width: 100%;
-        padding: 14px 20px;
+        flex: 1.5;
     }
 
     textarea {

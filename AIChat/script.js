@@ -4,6 +4,8 @@ const systemPromptInput = document.getElementById("systemPrompt");
 const modelInput = document.getElementById("modelInput");
 const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
+const exportButton = document.getElementById("exportButton");
+const importButton = document.getElementById("importButton");
 const statusText = document.getElementById("status");
 const promptChips = document.getElementById("promptChips");
 const themeToggle = document.getElementById("themeToggle");
@@ -15,6 +17,7 @@ const MAX_MESSAGE_LENGTH = 30000;
 
 const messages = [];
 let isLoading = false;
+let requestStartTime = 0;
 
 function setStatus(text) {
   statusText.textContent = text;
@@ -24,15 +27,25 @@ function scrollToBottom() {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function renderMessage(role, content) {
+function renderMessage(role, content, stats = null) {
   const element = document.createElement("div");
   element.className = `message ${role}`;
+  
+  let statsHtml = "";
+  if (stats) {
+    const timeSec = (stats.responseTime / 1000).toFixed(1);
+    statsHtml = `<div class="message-stats">Response time: ${timeSec}s | Tokens: ${stats.tokens}</div>`;
+  }
   
   if (role === "ai") {
     element.innerHTML = `
       <div class="message-content">${parseMarkdown(content)}</div>
+      ${statsHtml}
       <button class="copy-btn" aria-label="Copy response">Copy</button>
     `;
+    element.querySelectorAll(".code-block code").forEach(block => {
+      hljs.highlightElement(block);
+    });
   } else {
     element.textContent = content;
   }
@@ -175,9 +188,11 @@ async function askAI() {
   promptInput.value = "";
   setLoadingState(true);
   setStatus(`Asking model "${model}"...`);
+  requestStartTime = Date.now();
 
   let aiBubble;
   let fullResponse = "";
+  let responseStats = null;
 
   try {
     aiBubble = createTypingIndicator();
@@ -223,6 +238,12 @@ async function askAI() {
               messageContent.innerHTML = parseMarkdown(fullResponse);
               scrollToBottom();
             }
+            if (data.done) {
+              responseStats = {
+                responseTime: Date.now() - requestStartTime,
+                tokens: data.eval_count || 0
+              };
+            }
           } catch (e) {
             // Skip invalid JSON
           }
@@ -255,6 +276,11 @@ async function askAI() {
       const fallbackData = await fallbackResponse.json();
       fullResponse = fallbackData.message?.content || "";
       messageContent.innerHTML = parseMarkdown(fullResponse);
+      
+      responseStats = {
+        responseTime: Date.now() - requestStartTime,
+        tokens: fallbackData.eval_count || 0
+      };
     }
 
     const reply = fullResponse.trim();
@@ -267,11 +293,15 @@ async function askAI() {
       throw new Error(`AI response exceeds ${MAX_MESSAGE_LENGTH.toLocaleString()} character limit.`);
     }
 
-    messages.push({ role: "assistant", content: reply });
+    messages.push({ role: "assistant", content: reply, stats: responseStats });
     aiBubble.innerHTML = `
       <div class="message-content">${parseMarkdown(reply)}</div>
+      ${responseStats ? `<div class="message-stats">Response time: ${(responseStats.responseTime / 1000).toFixed(1)}s | Tokens: ${responseStats.tokens}</div>` : ''}
       <button class="copy-btn" aria-label="Copy response">Copy</button>
     `;
+    aiBubble.querySelectorAll(".code-block code").forEach(block => {
+      hljs.highlightElement(block);
+    });
     setStatus("Reply received.");
   } catch (error) {
     const message =
@@ -281,11 +311,11 @@ async function askAI() {
 
     if (aiBubble) {
       aiBubble.textContent =
-        "I couldn't reach the AI. Make sure Ollama is running on localhost:11434 and that the selected model is installed.\n try tiping this: ollama run qwen3.5";
+        "I couldn't reach the AI. Make sure Ollama is running on localhost:11434 and that the selected model is installed.\n if the model itn't instaled go to https://ollama.com/ to install it.\n try tiping this: ollama run qwen3.5";
     } else {
       renderMessage(
         "system",
-        "I couldn't reach the AI. Make sure Ollama is running on localhost:11434 and that the selected model is installed.\n try tiping this: ollama run qwen3.5"
+        "I couldn't reach the AI. Make sure Ollama is running on localhost:11434 and that the selected model is installed.\n if the model itn't instaled go to https://ollama.com/ to install it.\n try tiping this: ollama run qwen3.5"
       );
     }
 
@@ -308,23 +338,91 @@ function clearChat() {
 
 sendButton.addEventListener("click", askAI);
 clearButton.addEventListener("click", clearChat);
+exportButton.addEventListener("click", exportChat);
+importButton.addEventListener("click", () => document.getElementById("importInput").click());
+document.getElementById("importInput").addEventListener("change", importChat);
 
-promptInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" && !event.shiftKey) {
+document.addEventListener("keydown", (event) => {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
     event.preventDefault();
-    askAI();
+    if (!isLoading) askAI();
+  }
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "l") {
+    event.preventDefault();
+    if (!isLoading) clearChat();
+  }
+  if (event.key === "Escape") {
+    document.activeElement?.blur();
   }
 });
 
 promptInput.focus();
 
-promptChips.addEventListener("click", (event) => {
+const PROMPT_FILES = [
+  "prompt_like_10_years_old.txt",
+  "prompt_pros_and_cons.txt",
+  "prompt_summarize.txt",
+  "the_code_architect.txt",
+  "the_creative_visionary.txt",
+  "the_empathic_companion.txt",
+  "the_precision_analyst.txt",
+  "the_socratic_tutor.txt"
+];
+
+function getPromptLabel(filename) {
+  return filename
+    .replace("prompt_", "")
+    .replace(".txt", "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+async function initPromptChips() {
+  promptChips.innerHTML = "";
+  
+  for (const filename of PROMPT_FILES) {
+    const button = document.createElement("button");
+    button.className = "chip";
+    button.dataset.prompt = filename;
+    button.textContent = getPromptLabel(filename);
+    promptChips.appendChild(button);
+  }
+}
+
+initPromptChips();
+
+async function loadPromptFile(filename) {
+  try {
+    const response = await fetch(`./prompts/${filename}`);
+    if (!response.ok) throw new Error("Failed to load prompt");
+    const text = await response.text();
+    return text;
+  } catch (err) {
+    console.error("Error loading prompt:", err);
+    return null;
+  }
+}
+
+promptChips.addEventListener("click", async (event) => {
   const chip = event.target.closest(".chip");
   if (!chip) return;
 
-  const promptTemplate = chip.dataset.prompt;
-  systemPromptInput.value = promptTemplate;
-  systemPromptInput.focus();
+  const promptFile = chip.dataset.prompt;
+  console.log("Clicked chip, filename:", promptFile);
+  
+  if (!promptFile) return;
+
+  const promptContent = await loadPromptFile(promptFile);
+  console.log("Loaded content:", promptContent ? "yes" : "no");
+  
+  if (promptContent) {
+    console.log("Setting system prompt...");
+    systemPromptInput.value = promptContent;
+    systemPromptInput.focus();
+    console.log("Done! Value length:", systemPromptInput.value.length);
+  } else {
+    console.error("Failed to load prompt file");
+  }
 });
 
 const savedTheme = localStorage.getItem("theme") || "dark";
@@ -381,3 +479,80 @@ chat.addEventListener("click", async (event) => {
     setStatus("Failed to copy to clipboard");
   }
 });
+
+function exportChat() {
+  const exportData = {
+    version: "1.0",
+    exportedAt: new Date().toISOString(),
+    model: modelInput.value.trim() || "qwen3.5",
+    systemPrompt: systemPromptInput.value.trim(),
+    messages: messages.map((msg, idx) => {
+      const base = {
+        role: msg.role,
+        content: msg.content,
+        timestamp: msg.timestamp || new Date().toISOString()
+      };
+      if (msg.stats) base.stats = msg.stats;
+      return base;
+    })
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const date = new Date().toISOString().split("T")[0];
+  a.href = url;
+  a.download = `chat-export-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  setStatus("Chat exported successfully.");
+}
+
+function importChat(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      
+      if (!data.version || !data.messages || !Array.isArray(data.messages)) {
+        throw new Error("Invalid file format");
+      }
+
+      messages.length = 0;
+      chat.innerHTML = "";
+
+      if (data.model) modelInput.value = data.model;
+      if (data.systemPrompt) systemPromptInput.value = data.systemPrompt;
+
+      for (const msg of data.messages) {
+        if (!msg.content) continue;
+        
+        const messageObj = {
+          role: msg.role === "assistant" ? "assistant" : msg.role,
+          content: msg.content,
+          timestamp: msg.timestamp
+        };
+        
+        if (msg.stats) messageObj.stats = msg.stats;
+        
+        messages.push(messageObj);
+        renderMessage(messageObj.role === "assistant" ? "ai" : messageObj.role, messageObj.content, messageObj.stats);
+      }
+
+      if (messages.length === 0) {
+        renderMessage("system", "No messages found in import file.");
+      }
+
+      setStatus(`Imported ${messages.length} messages.`);
+    } catch (err) {
+      setStatus("Failed to import: Invalid file format.");
+      console.error("Import error:", err);
+    }
+  };
+  
+  reader.readAsText(file);
+  event.target.value = "";
+}
