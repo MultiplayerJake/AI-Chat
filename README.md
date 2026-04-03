@@ -15,18 +15,20 @@ Keyboard Shortcuts
 Updates:  
 ---------
 -------------------------------------------------- Update 30.03.2026 --------------------------------------------  
-- You can now use a preset for system prompts.  
+- added preset for system prompts.  
 - You can copy text from AI(Code too).  
 - AI can use bullet points and numbered lists and a lot more...  
 - Made the mobile interface better.
 
 -------------------------------------------------- Update 01.04.2026 --------------------------------------------
-- Better system prompts.
+- added Better system prompts.
   
 -------------------------------------------------- Update 03.04.2026 --------------------------------------------
 - added export and import your chat.  
 - added keyboard shortcuts.  
 - added better code highlighting.
 - added response stats. You can now see how long it took the AI to respond, the number of tokens used, and much more...
+- made chat UI better.
+- fixed some minor bugs.
   
 Last edited on 03.04.2026. <---- MultiplayerJake.  
