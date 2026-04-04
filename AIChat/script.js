@@ -311,11 +311,11 @@ async function askAI() {
 
     if (aiBubble) {
       aiBubble.textContent =
-        "I couldn't reach the AI. Make sure Ollama is running on localhost:11434 and that the selected model is installed.\n if the model itn't instaled go to https://ollama.com/ to install it.\n try tiping this: ollama run qwen3.5";
+        "I couldn't reach the AI. Make sure Ollama is running on localhost:11434 and that the selected model is installed.\n if the model itn't instaled go to https://ollama.com/ to install it.\n try tiping into cmd this: ollama run "  + modelInput.value.trim();
     } else {
       renderMessage(
         "system",
-        "I couldn't reach the AI. Make sure Ollama is running on localhost:11434 and that the selected model is installed.\n if the model itn't instaled go to https://ollama.com/ to install it.\n try tiping this: ollama run qwen3.5"
+        "I couldn't reach the AI. Make sure Ollama is running on localhost:11434 and that the selected model is installed.\n if the model itn't instaled go to https://ollama.com/ to install it.\n try tiping into cmd this: ollama run " + modelInput.value.trim()
       );
     }
 
