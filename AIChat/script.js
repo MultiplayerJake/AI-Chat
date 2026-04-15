@@ -9,7 +9,6 @@ const importButton = document.getElementById("importButton");
 const statusText = document.getElementById("status");
 const promptChips = document.getElementById("promptChips");
 const themeToggle = document.getElementById("themeToggle");
-const ollamaStatus = document.getElementById("ollamaStatus");
 
 
 const MAX_PROMPT_LENGTH = 30000;
@@ -19,24 +18,6 @@ const MAX_MESSAGE_LENGTH = 30000;
 const messages = [];
 let isLoading = false;
 let requestStartTime = 0;
-
-function setOllamaStatus(status) {
-    ollamaStatus.className = "ollama-status " + status;
-    ollamaStatus.title = status === "connected" ? "Ollama is running" : "Ollama is not responding";
-}
-
-async function checkOllamaConnection() {
-    setOllamaStatus("checking");
-    try {
-        const response = await fetch("http://localhost:11434/", { method: "GET" });
-        if (response.ok) {
-            setOllamaStatus("connected");
-            return true;
-        }
-    } catch (e) {}
-    setOllamaStatus("disconnected");
-    return false;
-}
 
 function setStatus(text) {
   statusText.textContent = text;
@@ -174,7 +155,18 @@ function setLoadingState(loading) {
   promptInput.disabled = loading;
   systemPromptInput.disabled = loading;
   modelInput.disabled = loading;
-  sendButton.textContent = loading ? "Thinking..." : "Send";
+  
+  const sendText = sendButton.querySelector("span");
+  const sendIcon = sendButton.querySelector(".send-icon");
+  
+  if (loading) {
+    sendText.textContent = "Thinking...";
+    if (sendIcon) sendIcon.style.display = "none";
+  } else {
+    sendText.textContent = "Send";
+    if (sendIcon) sendIcon.style.display = "block";
+  }
+  
   sendButton.classList.toggle("sending", loading);
 }
 
@@ -341,8 +333,7 @@ async function askAI() {
     setStatus(message);
   } finally {
     setLoadingState(false);
-promptInput.focus();
-checkOllamaConnection();
+    promptInput.focus();
   }
 }
 
@@ -357,15 +348,14 @@ function clearChat() {
 }
 
 sendButton.addEventListener("click", async () => {
-    await checkOllamaConnection();
     askAI();
 });
-clearButton.addEventListener("click", clearChat);
+clearButton.addEventListener("click", async () => {
+    clearChat();
+});
 exportButton.addEventListener("click", exportChat);
 importButton.addEventListener("click", () => document.getElementById("importInput").click());
 document.getElementById("importInput").addEventListener("change", importChat);
-
-modelInput.addEventListener("blur", checkOllamaConnection);
 
 document.addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
