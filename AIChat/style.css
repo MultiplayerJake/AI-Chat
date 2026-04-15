@@ -274,30 +274,43 @@ body {
     position: absolute;
     top: 8px;
     right: 8px;
-    padding: 6px 10px;
+    padding: 6px;
     border-radius: 8px;
     border: none;
     background: var(--copy-btn-bg);
     color: var(--text-muted);
-    font-size: 0.7rem;
     cursor: pointer;
-    opacity: 0;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message.ai .delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 36px;
+    padding: 6px;
+    border-radius: 8px;
+    border: none;
+    background: var(--copy-btn-bg);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.copy-btn:hover, .delete-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
 }
 
 .message-stats {
     font-size: 0.7rem;
     color: var(--text-dim);
     margin-top: 8px;
-}
-
-.message.ai:hover .copy-btn {
-    opacity: 1;
-}
-
-.copy-btn:hover {
-    background: var(--accent);
-    color: var(--bg);
 }
 
 .copy-btn.copied {
@@ -557,6 +570,23 @@ input:focus {
     gap: 10px;
 }
 
+.textarea-wrapper {
+    position: relative;
+}
+
+.textarea-wrapper textarea {
+    padding-bottom: 28px;
+}
+
+.textarea-wrapper .char-count {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    pointer-events: none;
+}
+
 .model-input-wrapper input {
     flex: 1;
 }
@@ -801,4 +831,44 @@ button:disabled {
         padding: 6px 12px;
         font-size: 0.75rem;
     }
+}
+
+.shortcuts-help {
+    margin: 16px;
+    padding: 12px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.shortcuts-help summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.shortcuts-help[open] summary {
+    margin-bottom: 12px;
+}
+
+.shortcuts-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.shortcut {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.shortcut kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.75rem;
 }

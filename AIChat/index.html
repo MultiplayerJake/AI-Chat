@@ -41,11 +41,14 @@
             <div class="top-row">
                 <div class="system-prompt-group">
                     <label for="systemPrompt">System prompt</label>
-                    <textarea
-                        id="systemPrompt"
-                        class="system-prompt"
-                        placeholder="Describe how the AI should behave..."
-                    ></textarea>
+                    <div class="textarea-wrapper">
+                        <textarea
+                            id="systemPrompt"
+                            class="system-prompt"
+                            placeholder="Describe how the AI should behave..."
+                        ></textarea>
+                        <span class="char-count" id="systemCharCount">0 chars | 0 words</span>
+                    </div>
                 </div>
 
                 <div>
@@ -59,7 +62,10 @@
             <div class="controls">
                 <div class="prompt-wrapper">
                     <label for="prompt">Your question</label>
-                    <textarea id="prompt" placeholder="Ask the AI something..."></textarea>
+                    <div class="textarea-wrapper">
+                        <textarea id="prompt" placeholder="Ask the AI something..."></textarea>
+                        <span class="char-count" id="promptCharCount">0 chars | 0 words</span>
+                    </div>
                 </div>
                 <div class="action-buttons-top">
                     <button class="export" id="exportButton" type="button">Export</button>
@@ -92,6 +98,15 @@
             <h3>Try these prompts</h3>
             <div class="prompt-chips" id="promptChips"></div>
         </section>
+
+        <details class="shortcuts-help">
+            <summary>Keyboard shortcuts</summary>
+            <div class="shortcuts-content">
+                <div class="shortcut"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Send message</div>
+                <div class="shortcut"><kbd>Ctrl</kbd> + <kbd>L</kbd> Clear chat</div>
+                <div class="shortcut"><kbd>Esc</kbd> Blur input</div>
+            </div>
+        </details>
         
         <input type="file" id="importInput" accept=".json" style="display: none;">
     </main>

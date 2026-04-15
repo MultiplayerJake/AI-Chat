@@ -9,6 +9,8 @@ const importButton = document.getElementById("importButton");
 const statusText = document.getElementById("status");
 const promptChips = document.getElementById("promptChips");
 const themeToggle = document.getElementById("themeToggle");
+const promptCharCount = document.getElementById("promptCharCount");
+const systemCharCount = document.getElementById("systemCharCount");
 
 
 const MAX_PROMPT_LENGTH = 30000;
@@ -21,6 +23,13 @@ let requestStartTime = 0;
 
 function setStatus(text) {
   statusText.textContent = text;
+}
+
+function updateCharCount(textarea, countEl) {
+  const text = textarea.value;
+  const chars = text.length;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  countEl.textContent = `${chars} chars | ${words} words`;
 }
 
 function scrollToBottom() {
@@ -41,7 +50,18 @@ function renderMessage(role, content, stats = null) {
     element.innerHTML = `
       <div class="message-content">${parseMarkdown(content)}</div>
       ${statsHtml}
-      <button class="copy-btn" aria-label="Copy response">Copy</button>
+      <button class="copy-btn" aria-label="Copy response">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </button>
+      <button class="delete-btn" aria-label="Delete message">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+      </button>
     `;
     element.querySelectorAll(".code-block code").forEach(block => {
       hljs.highlightElement(block);
@@ -371,6 +391,11 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+promptInput.addEventListener("input", () => updateCharCount(promptInput, promptCharCount));
+systemPromptInput.addEventListener("input", () => updateCharCount(systemPromptInput, systemCharCount));
+updateCharCount(promptInput, promptCharCount);
+updateCharCount(systemPromptInput, systemCharCount);
+
 promptInput.focus();
 
 const PROMPT_FILES = [
@@ -487,23 +512,33 @@ chat.addEventListener("click", async (event) => {
   }
 
   const copyBtn = event.target.closest(".copy-btn");
-  if (!copyBtn) return;
+  if (copyBtn) {
+    const messageEl = copyBtn.closest(".message");
+    const content = messageEl.querySelector(".message-content")?.textContent;
+    if (!content) return;
+    try {
+      await navigator.clipboard.writeText(content);
+      copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      copyBtn.classList.add("copied");
+      setTimeout(() => {
+        copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+        copyBtn.classList.remove("copied");
+      }, 1500);
+    } catch (err) {
+      setStatus("Failed to copy to clipboard");
+    }
+    return;
+  }
 
-  const messageEl = copyBtn.closest(".message");
-  const content = messageEl.querySelector(".message-content")?.textContent;
-
-  if (!content) return;
-
-  try {
-    await navigator.clipboard.writeText(content);
-    copyBtn.textContent = "Copied!";
-    copyBtn.classList.add("copied");
-    setTimeout(() => {
-      copyBtn.textContent = "Copy";
-      copyBtn.classList.remove("copied");
-    }, 1500);
-  } catch (err) {
-    setStatus("Failed to copy to clipboard");
+  const deleteBtn = event.target.closest(".delete-btn");
+  if (deleteBtn) {
+    const messageEl = deleteBtn.closest(".message");
+    const index = Array.from(chat.children).indexOf(messageEl);
+    if (index === -1) return;
+    messages.splice(index, 1);
+    messageEl.remove();
+    setStatus("Message deleted");
+    return;
   }
 });
 
