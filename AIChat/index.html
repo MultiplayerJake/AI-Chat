@@ -11,17 +11,24 @@
 </head>
 <body>
     <main class="app">
+        <div class="bg-blobs">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
+
         <header class="hero">
             <div class="hero-content">
-                <p class="eyebrow">MultiplayerJake</p>
-                <h1>AI Chat</h1>
+                <p class="eyebrow">Local AI Chat</p>
+                <h1>Ask AI</h1>
                 <p class="subtitle">
-                    Type a question, press send, and get a reply from your local AI model.
-                    By default this page talks to Ollama on your device, but you can change the model in the toolbar below.
+                    Get answers from Ollama. Type a question and press send.
                 </p>
             </div>
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-                <span class="theme-icon">&#9790;</span>
+                <svg class="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
             </button>
         </header>
 
@@ -43,7 +50,10 @@
 
                 <div>
                     <label for="modelInput">Model name</label>
-                    <input id="modelInput" type="text" value="qwen3.5"/>
+                    <div class="model-input-wrapper">
+                        <input id="modelInput" type="text" value="qwen3.5"/>
+                        <span class="ollama-status" id="ollamaStatus" title="Ollama connection status"></span>
+                    </div>
                 </div>
             </div>
 

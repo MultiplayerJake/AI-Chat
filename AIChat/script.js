@@ -9,6 +9,7 @@ const importButton = document.getElementById("importButton");
 const statusText = document.getElementById("status");
 const promptChips = document.getElementById("promptChips");
 const themeToggle = document.getElementById("themeToggle");
+const ollamaStatus = document.getElementById("ollamaStatus");
 
 
 const MAX_PROMPT_LENGTH = 30000;
@@ -18,6 +19,24 @@ const MAX_MESSAGE_LENGTH = 30000;
 const messages = [];
 let isLoading = false;
 let requestStartTime = 0;
+
+function setOllamaStatus(status) {
+    ollamaStatus.className = "ollama-status " + status;
+    ollamaStatus.title = status === "connected" ? "Ollama is running" : "Ollama is not responding";
+}
+
+async function checkOllamaConnection() {
+    setOllamaStatus("checking");
+    try {
+        const response = await fetch("http://localhost:11434/", { method: "GET" });
+        if (response.ok) {
+            setOllamaStatus("connected");
+            return true;
+        }
+    } catch (e) {}
+    setOllamaStatus("disconnected");
+    return false;
+}
 
 function setStatus(text) {
   statusText.textContent = text;
@@ -322,7 +341,8 @@ async function askAI() {
     setStatus(message);
   } finally {
     setLoadingState(false);
-    promptInput.focus();
+promptInput.focus();
+checkOllamaConnection();
   }
 }
 
@@ -336,11 +356,16 @@ function clearChat() {
   setStatus("Conversation reset.");
 }
 
-sendButton.addEventListener("click", askAI);
+sendButton.addEventListener("click", async () => {
+    await checkOllamaConnection();
+    askAI();
+});
 clearButton.addEventListener("click", clearChat);
 exportButton.addEventListener("click", exportChat);
 importButton.addEventListener("click", () => document.getElementById("importInput").click());
 document.getElementById("importInput").addEventListener("change", importChat);
+
+modelInput.addEventListener("blur", checkOllamaConnection);
 
 document.addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
@@ -439,8 +464,20 @@ themeToggle.addEventListener("click", () => {
 
 function updateThemeIcon() {
   const theme = document.documentElement.getAttribute("data-theme");
-  const icon = themeToggle.querySelector(".theme-icon");
-  icon.innerHTML = theme === "light" ? "&#9790;" : "&#9728;";
+  const svg = themeToggle.querySelector(".theme-icon");
+  if (theme === "light") {
+    svg.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+  } else {
+    svg.innerHTML = `<circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+  }
 }
 
 chat.addEventListener("click", async (event) => {
