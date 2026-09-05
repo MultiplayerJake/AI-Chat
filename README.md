@@ -12,7 +12,7 @@ Keyboard Shortcuts
 - Escape: Clear focus from the textarea.  
 
 
-https://github.com/user-attachments/assets/3bd3fddf-2382-4a29-978f-0804203b776e
+https://github.com/user-attachments/assets/826e78ed-4b1d-4803-a92a-1033f7bcac39
 
 
 Updates:  
