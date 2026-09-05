@@ -39,4 +39,4 @@ Updates:
 - made AI chat UI better.
 - added some bugs. (That will be fixed)  
   
-Last edited on 15.04.2026. <---- MultiplayerJake.  
+Last edited on 5.09.2026. <---- MultiplayerJake.  
